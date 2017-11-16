@@ -17,9 +17,8 @@ func CreateSurveyController(c echo.Context) error {
 	if err := c.Bind(&s); err != nil {
 		fmt.Println("s", s)
 	}
-
 	fmt.Println(s)
-	survey := models.NewSurveyModel("organizationName", "userId", s.Content)
+	survey := models.NewSurveyModel(s.Organization, "userId", s.Content)
 	err := survey.Save()
 	if err != nil {
 		return c.JSON(

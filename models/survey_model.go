@@ -16,12 +16,11 @@ type Survey struct {
 }
 
 
-func NewSurveyModel(organizationId string, userId string, content [][]map[string]string) *Survey {
-	// orgId := bson.ObjectIdHex("5a07c48eab60e97174000002")
+func NewSurveyModel(organizationId bson.ObjectId, userId string, content [][]map[string]string) *Survey {
 	s := new(Survey)
 	s.Id = bson.NewObjectId()
 	s.Timestamp = time.Now()
-	s.Organization = orgId
+	s.Organization = organizationId
 	s.Content = content
 
 	return s

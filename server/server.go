@@ -27,21 +27,21 @@ func Run() {
 
 	// ROUTES
 
-	e.GET("/", accessible)
-	e.POST("/login", LoginUserController)
-	e.POST("/user", CreateUserController)
+	e.GET("/api/", accessible)
+	e.POST("/api/login", LoginUserController)
+	e.POST("/api/user", CreateUserController)
 
-	r.GET("/user", GetUserController)
-	e.POST("/user/update", UpdateUserController)
-	e.POST("/user/delete", RemoveUserController)
+	r.GET("/api/user", GetUserController)
+	e.POST("/api/user/update", UpdateUserController)
+	e.POST("/api/user/delete", RemoveUserController)
 
-	r.POST("/organization", CreateOrganizationController)
-	e.GET("/:organizationID", GetOrganizationController)
-	e.POST("/:organizationID/update", UpdateOrganizationController)
-	e.POST("/:organizationID/delete", RemoveOrganizationController)	
+	r.POST("/api/organization", CreateOrganizationController)
+	e.GET("/api/:organizationID", GetOrganizationController)
+	e.POST("/api/:organizationID/update", UpdateOrganizationController)
+	e.POST("/api/:organizationID/delete", RemoveOrganizationController)	
 
-	e.POST("/survey", CreateSurveyController)
-	e.GET("/:organizationID/get-surveys", GetSurveysController)
+	e.POST("/api/survey", CreateSurveyController)
+	e.GET("/api/:organizationID/get-surveys", GetSurveysController)
 	// e.POST("/:organizationID/update", UpdateOrganizationController)
 	// e.POST("/:organizationID/delete", RemoveOrganizationController)	
 
