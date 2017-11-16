@@ -27,7 +27,7 @@ func Run() {
 
 	// ROUTES
 
-	e.GET("/api/", accessible)
+	e.GET("/api", accessible)
 	e.POST("/api/login", LoginUserController)
 	e.POST("/api/user", CreateUserController)
 
