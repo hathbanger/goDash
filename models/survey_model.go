@@ -11,12 +11,12 @@ import (
 type Survey struct {
 	Id 				bson.ObjectId			`json:"id",bson:"_id"`
 	Timestamp 		time.Time	       		`json:"time",bson:"time"`
-	Organization 	bson.ObjectId          	`json:"organizationId",bson:"organizationId"`
+	Organization 	string          	`json:"organizationId",bson:"organizationId"`
 	Content 		[][]map[string]string 	`json:"content",bson:"content"`
 }
 
 
-func NewSurveyModel(organizationId bson.ObjectId, userId string, content [][]map[string]string) *Survey {
+func NewSurveyModel(organizationId string, userId string, content [][]map[string]string) *Survey {
 	s := new(Survey)
 	s.Id = bson.NewObjectId()
 	s.Timestamp = time.Now()
@@ -48,8 +48,8 @@ func (s *Survey) Save() error {
 		return err
 	}
 
-	organization, err := FindOrganizationModel(s.Organization.Hex())
-	AddSurveyToOrganization(s.Id.Hex(), organization.Id.Hex())
+	// organization, err := FindOrganizationModel(s.Organization.Hex())
+	// AddSurveyToOrganization(s.Id.Hex(), organization.Id.Hex())
 
 
 	return nil

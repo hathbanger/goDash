@@ -9,16 +9,12 @@ import (
 )
 
 func CreateSurveyController(c echo.Context) error {
-
-	// userToken := c.Get("user").(*jwt.Token)
-	// claims := userToken.Claims.(jwt.MapClaims)
-	// userId := claims["id"].(string)
 	var s models.Survey
 	if err := c.Bind(&s); err != nil {
 		fmt.Println("s", s)
 	}
-	fmt.Println(s)
-	survey := models.NewSurveyModel(s.Organization, "userId", s.Content)
+	fmt.Println("creating survey!")
+	survey := models.NewSurveyModel("s.Organization", "userId", s.Content)
 	err := survey.Save()
 	if err != nil {
 		return c.JSON(
