@@ -30,9 +30,10 @@ func Run() {
 	e.GET("/api", accessible)
 	e.POST("/api/login", LoginUserController)
 	e.POST("/api/user", CreateUserController)
-
+	
 	r.GET("/api/user", GetUserController)
 	e.POST("/api/user/update", UpdateUserController)
+	e.POST("/api/user/upload", BulkUserController)
 	e.POST("/api/user/delete", RemoveUserController)
 
 	r.POST("/api/organization", CreateOrganizationController)
@@ -42,6 +43,16 @@ func Run() {
 
 	e.POST("/api/survey", CreateSurveyController)
 	e.GET("/api/:organizationID/get-surveys", GetSurveysController)
+	e.GET("/api/send-survey", SendSurvey)
+	e.POST("/api/bulk-upload", BulkResponseController)
+	e.POST("/api/receive-survey", ReceiveSurveyResponse)
+	e.POST("/api/survey/update", UpdateSurveyController)
+	// e.POST("/:organizationID/delete", RemoveOrganizationController)	
+
+
+	e.POST("/api/campaign", CreateCampaignController)
+	e.GET("/api/:organizationID/get-campaigns", GetCampaignsController)
+	e.GET("/api/:organizationID/:campaignId", StartCampaignController)
 	// e.POST("/:organizationID/update", UpdateOrganizationController)
 	// e.POST("/:organizationID/delete", RemoveOrganizationController)	
 

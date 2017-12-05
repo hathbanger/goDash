@@ -4,24 +4,58 @@ import (
 	"net/http"
 	"fmt"
 	"time"
+
 	"github.com/hathbanger/goDash/models"
 	"github.com/labstack/echo"
 	"github.com/dgrijalva/jwt-go"
 )
+
+func BulkUserController(c echo.Context) error {
+	
+	var u models.BulkUserCreate
+	if err := c.Bind(&u); err != nil {
+		fmt.Println("u", u.PhoneNumbers)
+	}
+
+	fmt.Println("u", u.PhoneNumbers)
+
+	for _, v := range u.PhoneNumbers {
+		user := models.NewUserModel( v, "", v, u.Organization )
+		_ = user.Save()
+	}
+
+
+	return c.JSON(http.StatusOK, map[string]string{
+			"token": "woooooo",
+		})
+}
+
 
 func CreateUserController(c echo.Context) error {
 	var u models.UserCreate
 	if err := c.Bind(&u); err != nil {
 		fmt.Println("u", u.Username)
 	}
-	user := models.NewUserModel(u.Username, u.Password)
-	fmt.Println("wowwww", u.Organization, "woooooo", u.Username, u.Password)
-	err := user.Save()
-	if len(u.Organization) > 0{
-		fmt.Println("ORG ADDED!")
-		models.AddOrganizationToUser(user.Id.Hex(), u.Organization)
-		models.AddUserToOrganization(user.Id.Hex(), u.Organization)
+
+	var user *models.User
+	var err error
+
+	if len(u.Organization) == 0 {
+		user = models.NewAdminUserModel(u.Username, u.Password, u.PhoneNumber, "")
+		err = user.Save()
+	} else {
+		user = models.NewUserModel("",  "",  u.PhoneNumber, u.Organization)
+		err = user.Save()		
 	}
+
+	if err != nil {
+		fmt.Println("SHIT!")
+	}
+
+
+
+	// TODO: need to make an admin user creation controller
+
 	if err != nil {
 
 		return c.JSON(
@@ -42,7 +76,6 @@ func CreateUserController(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(http.StatusOK, map[string]string{
 			"token": t,
 		})

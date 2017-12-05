@@ -12,8 +12,9 @@ type Organization struct {
 	Id 			bson.ObjectId			`json:"id",bson:"_id"`
 	Timestamp 	time.Time	       		`json:"time",bson:"time"`
 	OrganizationName	string          `json:"organizationName",bson:"organizationName"`
-	Users 	[]*bson.ObjectId 			`json:"users",bson:"users,omitempty"`
-	Surveys 	[]*bson.ObjectId 		`json:"surveys,omitempty",bson:"surveys,omitempty"`
+	Users 		[]*bson.ObjectId 		`json:"users",bson:"users,omitempty"`
+	Campaigns	[]*bson.ObjectId 		`json:"campaigns",bson:"campaigns"`
+	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
 }
 
 
@@ -55,7 +56,7 @@ func (o *Organization) Save() error {
 	user, err := FindUserModel(userArr.Hex())
 
 
-	AddOrganizationToUser(user.Id.Hex(), o.Id.Hex())
+	AddOrganizationToUser(user.Id, o.Id)
 
 
 	return nil
@@ -125,8 +126,7 @@ func DeleteOrganizationModel(organizationId string) error {
 	return nil
 }
 
-func AddOrganizationToUser(userId string, organizationId string) error {
-	fmt.Println("ADDORGTOUSER FIRED")
+func AddOrganizationToUser(userId bson.ObjectId, organizationId bson.ObjectId) error {
 	session, err := store.ConnectToDb()
 	defer session.Close()
 	if err != nil {
@@ -140,14 +140,14 @@ func AddOrganizationToUser(userId string, organizationId string) error {
 	}
 
 	fmt.Println("FINDING ORG", organizationId)
-	organization, err := FindOrganizationModel(organizationId)
+	organization, err := FindOrganizationModel(organizationId.Hex())
 	// err = collection.Update(
 	// 	    bson.M{"id": bson.ObjectIdHex(userId)}, 
 	// 	    bson.M{"$push": bson.M{"Organization": organization.Id}},
 	// 	)
 
-	query := bson.M{"id": bson.ObjectIdHex(userId)}
-	update := bson.M{"$push": bson.M{"organization": &organization.Id}}
+	query := bson.M{"id": userId}
+	update := bson.M{"$push": bson.M{"organizations": &organization.Id}}
 
 	// Update
 	err = collection.Update(query, update)

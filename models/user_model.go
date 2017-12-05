@@ -2,7 +2,7 @@ package models
 
 import (
 	"time"
-	// "fmt"
+	"fmt"
 
 	"labix.org/v2/mgo/bson"
 	"github.com/hathbanger/goDash/store"
@@ -16,7 +16,9 @@ type User struct {
 	Timestamp 	time.Time	       		`json:"time",bson:"time,omitempty"`
 	Username	string           		`json:"username",bson:"username,omitempty"`
 	Password	string           		`json:"-",bson:"password,omitempty"`
-	Organization 	[]*bson.ObjectId 	`json:"organization",bson:"organization,omitempty"`
+	PhoneNumber	string           		`json:"phonenumber",bson:"phonenumber"`
+	Organizations 	[]*bson.ObjectId 	`json:"organizations",bson:"organizations,omitempty"`
+	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
 }
 
 
@@ -26,17 +28,39 @@ type UserLogin struct {
 }
 
 type UserCreate struct {
-	Username string `json:username`
-	Password string `json:password`
+	Username string `json:username,omitempty`
+	Password string `json:password,omitempty`
+	PhoneNumber string `json:phonenumber,omitempty`
 	Organization string `json:organization,omitempty`
 }
 
-func NewUserModel(username string, password string) *User {
+type BulkUserCreate struct {
+	Organization string `json:organization`
+	PhoneNumbers []string `json:"phoneNumbers"` 
+}
+
+func NewUserModel(username string, password string, phoneNumber string, organizationId string) *User {
+	
+	org := bson.ObjectIdHex(organizationId)
 
 	u := new(User)
 	u.Id = bson.NewObjectId()
 	u.Username = username
+	u.PhoneNumber = phoneNumber
 	u.Password = password
+	u.Organizations = []*bson.ObjectId{&org}
+	u.Timestamp = time.Now()
+
+	return u
+}
+func NewAdminUserModel(username string, password string, phoneNumber string, organizationId string) *User {
+	
+	u := new(User)
+	u.Id = bson.NewObjectId()
+	u.Username = username
+	u.PhoneNumber = phoneNumber
+	u.Password = password
+	// u.Organizations = orgArr
 	u.Timestamp = time.Now()
 
 	return u
@@ -48,9 +72,9 @@ func (u *User) Save() error {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("new user model!")
 	collection, err := store.ConnectToCollection(
-		session, "users", []string{"username"})
+		session, "users", []string{"phonenumber"})
 	if err != nil {
 		panic(err)
 	}
@@ -59,11 +83,20 @@ func (u *User) Save() error {
 		Id: u.Id,
 		Timestamp: u.Timestamp,
 		Username: u.Username,
+		PhoneNumber: u.PhoneNumber,
+		Organizations: u.Organizations,
 		Password: u.Password})
+	fmt.Println("new user saved!", err)
 	if err != nil {
 		return err
 	}
 
+	if len(u.Organizations) > 0 {
+		orgId := u.Organizations[0]
+		AddUserToOrganization(u.Id.Hex(), orgId.Hex())
+	}
+
+	fmt.Println("new user saved!")
 	return nil
 }
 
@@ -76,7 +109,7 @@ func FindUserModel(userId string) (User, error) {
 	}
 
 	collection, err := store.ConnectToCollection(
-		session, "users", []string{"username"})
+		session, "users", []string{"phonenumber"})
 	if err != nil {
 		panic(err)
 	}
@@ -90,6 +123,32 @@ func FindUserModel(userId string) (User, error) {
 	return user, err
 }
 
+func FindUserModelByPhoneNumber(phoneNumber string) (User, error) {
+
+	fmt.Println("FINDING USER BY PHONE ", phoneNumber)
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection, err := store.ConnectToCollection(
+		session, "users", []string{"phonenumber"})
+	if err != nil {
+		panic(err)
+	}
+
+	user := User{}
+	err = collection.Find(bson.M{"phonenumber": phoneNumber}).One(&user)
+	if err != nil {
+		return user, err
+	}
+
+	fmt.Println("USER FOUND BY PHONENUMBER ", user)
+
+	return user, err
+}
+
 func FindByUsernameModel(username string) (User, error) {
 
 	session, err := store.ConnectToDb()
@@ -99,7 +158,7 @@ func FindByUsernameModel(username string) (User, error) {
 	}
 
 	collection, err := store.ConnectToCollection(
-		session, "users", []string{"username"})
+		session, "users", []string{"phonenumber"})
 	if err != nil {
 		panic(err)
 	}
@@ -123,7 +182,7 @@ func UpdateUserModel(userId string, username string, password string) (User, err
 		panic(err)
 	}
 
-	collection := session.DB("butterfli").C("users")
+	collection := session.DB("dash").C("users")
 	colQuerier := bson.M{"id": user.Id}
 	change := bson.M{"$set": bson.M{ "password": password }}
 	err = collection.Update(colQuerier, change)
@@ -142,7 +201,7 @@ func DeleteUserModel(userId string) error {
 	}
 
 	collection, err := store.ConnectToCollection(
-		session, "users", []string{"username"})
+		session, "users", []string{"phonenumber"})
 	if err != nil {
 		panic(err)
 	}
