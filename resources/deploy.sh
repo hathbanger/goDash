@@ -12,6 +12,7 @@ gcloud --quiet config set container/cluster $CLUSTER_NAME
 gcloud --quiet config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
 gcloud --quiet container clusters get-credentials $CLUSTER_NAME
 echo "Push Docker Image"
+docker tag dash-api hathbanger/dash-api
 docker push hathbanger/dash-api
 yes | gcloud beta container images add-tag hathbanger/dash-api:$TRAVIS_COMMIT hathbanger/dash-api:latest
 echo "Configure Kubernetes"
