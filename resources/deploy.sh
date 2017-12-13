@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 echo "Build Docker"
+docker run --rm -it -v "$GOPATH":/gopath -v "$(pwd)":/app -e "GOPATH=/gopath" -w /app golang:1.8.3 sh -c 'CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s" -o goDash'
 docker build -t gcr.io/serene-188901/dash-api:$TRAVIS_COMMIT .
 docker tag gcr.io/serene-188901/dash-api:$TRAVIS_COMMIT gcr.io/serene-188901/dash-api:latest
 echo "Authenticate Google Cloud Engine"
