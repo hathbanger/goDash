@@ -24,7 +24,7 @@ func Run() {
 	}))
 
 	// ROUTES
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/test", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!\n")
 	})
 	e.GET("/api", accessible)
