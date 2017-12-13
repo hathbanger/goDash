@@ -1,0 +1,30 @@
+language: go
+
+go:
+  - 1.9.1
+
+before_install:
+  - go get
+  # - dep ensure
+
+# TODO: implement code quality check
+# script:
+#   - go test -race -coverprofile=coverage.txt -covermode=atomic
+#
+# after_success:
+#   - bash <(curl -s https://codecov.io/bash) -t 208572b1-f8c5-42a4-b302-41698ad73609
+
+install:
+  - sudo docker build -t test/build .
+
+# TODO; implement test coverage check
+script:
+  - echo "skip tests"
+
+# TODO: implement deployment
+# deploy:
+#   - provider: script
+#     script: ./resources/deploy.sh
+#     skip_cleanup: true
+#     on:
+#       branch: master
