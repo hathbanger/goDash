@@ -3,15 +3,15 @@ package server
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
 )
 
 func accessible(c echo.Context) error {
 
-	return c.String(http.StatusOK, "Accessible")
+	return c.String(http.StatusOK, "Hello from accessible!")
 }
-	
+
 func restricted(c echo.Context) error {
 
 	user := c.Get("user").(*jwt.Token)
