@@ -19,3 +19,4 @@ kubectl config view
 kubectl config current-context
 echo "Deploy"
 kubectl set image deployment/dash-api dash-api=gcr.io/serene-188901/dash-api:$TRAVIS_COMMIT
+
