@@ -12,13 +12,13 @@ import (
 )
 
 type User struct {
-	Id 			bson.ObjectId			`json:"id",bson:"_id,omitempty"`
-	Timestamp 	time.Time	       		`json:"time",bson:"time,omitempty"`
-	Username	string           		`json:"username",bson:"username,omitempty"`
-	Password	string           		`json:"-",bson:"password,omitempty"`
-	PhoneNumber	string           		`json:"phonenumber",bson:"phonenumber"`
-	Organizations 	[]*bson.ObjectId 	`json:"organizations",bson:"organizations,omitempty"`
-	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
+	Id 				bson.ObjectId			`json:"id",bson:"_id,omitempty"`
+	Timestamp 		time.Time	       		`json:"time",bson:"time,omitempty"`
+	Username		string           		`json:"username",bson:"username,omitempty"`
+	Password		string           		`json:"-",bson:"password,omitempty"`
+	PhoneNumber		string           		`json:"phonenumber",bson:"phonenumber"`
+	Organization 	*bson.ObjectId 			`json:"organization",bson:"organization,omitempty"`
+	Surveys 		[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
 }
 
 
@@ -48,7 +48,7 @@ func NewUserModel(username string, password string, phoneNumber string, organiza
 	u.Username = username
 	u.PhoneNumber = phoneNumber
 	u.Password = password
-	u.Organizations = []*bson.ObjectId{&org}
+	u.Organization = &org
 	u.Timestamp = time.Now()
 
 	return u
@@ -60,7 +60,7 @@ func NewAdminUserModel(username string, password string, phoneNumber string, org
 	u.Username = username
 	u.PhoneNumber = phoneNumber
 	u.Password = password
-	// u.Organizations = orgArr
+	// u.Organization = orgArr
 	u.Timestamp = time.Now()
 
 	return u
@@ -84,15 +84,15 @@ func (u *User) Save() error {
 		Timestamp: u.Timestamp,
 		Username: u.Username,
 		PhoneNumber: u.PhoneNumber,
-		Organizations: u.Organizations,
+		Organization: u.Organization,
 		Password: u.Password})
 	fmt.Println("new user saved!", err)
 	if err != nil {
 		return err
 	}
 
-	if len(u.Organizations) > 0 {
-		orgId := u.Organizations[0]
+	if u.Organization != nil {
+		orgId := u.Organization
 		AddUserToOrganization(u.Id.Hex(), orgId.Hex())
 	}
 

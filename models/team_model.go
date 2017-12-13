@@ -9,81 +9,84 @@ import (
 )
 
 type Team struct {
-	Id 			bson.ObjectId			`json:"id",bson:"_id"`
-	Timestamp 	time.Time	       		`json:"time",bson:"time"`
-	TeamName	string          		`json:"teamName",bson:"teamName"`
-	TeamType	string					`json:"teamType",bson:"teamType"`
-	Users 		[]*bson.ObjectId 		`json:"users",bson:"users,omitempty"`
-	Campaigns	[]*bson.ObjectId 		`json:"campaigns",bson:"campaigns"`
-	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
+	Id 				bson.ObjectId		`json:"id",bson:"_id"`
+	Timestamp 		time.Time	       	`json:"time",bson:"time"`
+	TeamName		string          	`json:"teamName",bson:"teamName"`
+	TeamType		string				`json:"teamType",bson:"teamType"`
+	Organization 	*bson.ObjectId 		`json:"organization",bson:"organization"`
+	Users 			[]*bson.ObjectId 	`json:"users",bson:"users,omitempty"`
+	Campaigns		[]*bson.ObjectId 	`json:"campaigns",bson:"campaigns,omitempty"`
+	Surveys 		[]*bson.ObjectId 	`json:"surveys",bson:"surveys,omitempty"`
 }
 
 
-// func NewOrganizationModel(organizationName string, userId string) *Organization {
-// 	objId := bson.ObjectIdHex(userId)
 
-// 	o := new(Organization)
-// 	o.Id = bson.NewObjectId()
-// 	o.Timestamp = time.Now()
-// 	o.OrganizationName = organizationName
-// 	o.Users = []*bson.ObjectId{&objId}
+func NewTeamModel(teamName string, teamType string, organizationId string) *Team {
+	orgId := bson.ObjectIdHex(organizationId)
 
-// 	return o
-// }
+	t := new(Team)
+	t.Id = bson.NewObjectId()
+	t.Timestamp = time.Now()
+	t.Organization = &orgId
+	t.TeamName = teamName
+	t.TeamType = teamType
 
-// func (o *Organization) Save() error {
-// 	session, err := store.ConnectToDb()
-// 	defer session.Close()
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	return t
+}
 
-// 	collection, err := store.ConnectToCollection(
-// 		session, "organizations", []string{"organizationName"})
-// 	if err != nil {
-// 		panic(err)
-// 	}
+func (t *Team) Save() error {
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
 
-// 	err = collection.Insert(&Organization{
-// 		Id: o.Id,
-// 		Timestamp: o.Timestamp,
-// 		OrganizationName: o.OrganizationName,
-// 		Users: o.Users})
-// 	if err != nil {
-// 		return err
-// 	}
+	// org, err := FindOrganizationModel(t.Organization.Hex())
 
-// 	userArr := o.Users[0]
-// 	user, err := FindUserModel(userArr.Hex())
+	collection, err := store.ConnectToCollection(
+		session, "teams", []string{"id"})
+	if err != nil {
+		panic(err)
+	}
+
+	err = collection.Insert(&Team{
+		Id: t.Id,
+		Timestamp: t.Timestamp,
+		Organization: t.Organization,
+		TeamName: t.TeamName,
+		TeamType: t.TeamType})
+	if err != nil {
+		return err
+	}
+
+	AddTeamToOrganization(t.Organization.Hex(), t.Id.Hex())
 
 
-// 	AddOrganizationToUser(user.Id, o.Id)
+	return nil
+}
 
+func FindTeamModel(teamId string) (Team, error) {
 
-// 	return nil
-// }
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
 
-// func FindOrganizationModel(organizationId string) (Organization, error) {
+	collection, err := store.ConnectToCollection(
+		session, "teams", []string{"id"})
+	if err != nil {
+		panic(err)
+	}
 
-// 	session, err := store.ConnectToDb()
-// 	defer session.Close()
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	team := Team{}
+	err = collection.Find(bson.M{"id": bson.ObjectIdHex(teamId)}).One(&team)
+	if err != nil {
+		return team, err
+	}
 
-// 	collection, err := store.ConnectToCollection(
-// 		session, "organizations", []string{"organizationName"})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	organization := Organization{}
-// 	err = collection.Find(bson.M{"id": bson.ObjectIdHex(organizationId)}).One(&organization)
-// 	if err != nil {
-// 		return organization, err
-// 	}
-// 	return organization, err
-// }
+	return team, err
+}
 
 
 // func UpdateOrganizationModel(organizationId string, organizationName string) (Organization, error) {
@@ -161,36 +164,61 @@ type Team struct {
 // 	return nil
 // }
 
-// func AddUserToOrganization(userId string, organizationId string) error {
-// 	fmt.Println("AddUserToOrganization FIRED")
-// 	session, err := store.ConnectToDb()
-// 	defer session.Close()
-// 	if err != nil {
-// 		fmt.Println("err1", err)
-// 	}
+func AddTeamToOrganization(organizationId string, teamId string) error {
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		fmt.Println("err1", err)
+	}
 
-// 	collection, err := store.ConnectToCollection(
-// 		session, "organizations", []string{"organizationName"})
-// 	if err != nil {
-// 		fmt.Println("err2", err)
-// 	}
+	collection, err := store.ConnectToCollection(
+		session, "organizations", []string{"organizationName"})
+	if err != nil {
+		fmt.Println("err2", err)
+	}
 
-// 	user, err := FindUserModel(userId)
-// 	organization, err := FindOrganizationModel(organizationId)
+	organization, err := FindOrganizationModel(organizationId)
+	team, err := FindTeamModel(teamId)
 	
-// 	fmt.Println("FINDING ORG", organization)
-// 	query := bson.M{"id": organization.Id}
-// 	update := bson.M{"$push": bson.M{"users": &user.Id}}
-// 	organizationAFter, err := FindOrganizationModel(organizationId)
+	query := bson.M{"id": organization.Id}
+	update := bson.M{"$push": bson.M{"teams": &team.Id}}
 
-// 	fmt.Println("organizationAFter", organizationAFter)
-// 	// Update
-// 	err = collection.Update(query, update)
+	// Update
+	err = collection.Update(query, update)
 
 
-// 	if err != nil {
-// 		fmt.Println("err3", err)
-// 	}
+	if err != nil {
+		fmt.Println("err3", err)
+	}
 
-// 	return nil
-// }
+	return nil
+}
+func AddUserToTeam(organizationId string, teamId string) error {
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		fmt.Println("err1", err)
+	}
+
+	collection, err := store.ConnectToCollection(
+		session, "organizations", []string{"organizationName"})
+	if err != nil {
+		fmt.Println("err2", err)
+	}
+
+	organization, err := FindOrganizationModel(organizationId)
+	team, err := FindTeamModel(teamId)
+
+	query := bson.M{"id": organization.Id}
+	update := bson.M{"$push": bson.M{"teams": &team.Id}}
+
+	// Update
+	err = collection.Update(query, update)
+
+
+	if err != nil {
+		fmt.Println("err3", err)
+	}
+
+	return nil
+}

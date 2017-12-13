@@ -12,6 +12,7 @@ type Organization struct {
 	Id 			bson.ObjectId			`json:"id",bson:"_id"`
 	Timestamp 	time.Time	       		`json:"time",bson:"time"`
 	OrganizationName	string          `json:"organizationName",bson:"organizationName"`
+	Teams 		[]*bson.ObjectId 		`json:"teams",bson:"teams,omitempty"`
 	Users 		[]*bson.ObjectId 		`json:"users",bson:"users,omitempty"`
 	Campaigns	[]*bson.ObjectId 		`json:"campaigns",bson:"campaigns"`
 	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
@@ -147,7 +148,7 @@ func AddOrganizationToUser(userId bson.ObjectId, organizationId bson.ObjectId) e
 	// 	)
 
 	query := bson.M{"id": userId}
-	update := bson.M{"$push": bson.M{"organizations": &organization.Id}}
+	update := bson.M{"$set": bson.M{"organization": &organization.Id}}
 
 	// Update
 	err = collection.Update(query, update)

@@ -43,7 +43,7 @@ func Run() {
 
 	e.POST("/api/survey", CreateSurveyController)
 	e.GET("/api/:organizationID/get-surveys", GetSurveysController)
-	e.GET("/api/send-survey", SendSurvey)
+	e.GET("/api/send-survey", SendSurveyController)
 	e.POST("/api/bulk-upload", BulkResponseController)
 	e.POST("/api/receive-survey", ReceiveSurveyResponse)
 	e.POST("/api/survey/update", UpdateSurveyController)
@@ -53,9 +53,15 @@ func Run() {
 	e.POST("/api/campaign", CreateCampaignController)
 	e.GET("/api/:organizationID/get-campaigns", GetCampaignsController)
 	e.GET("/api/:organizationID/:campaignId", StartCampaignController)
+
+	e.POST("/api/team", CreateTeamController)
+	e.GET("/api/:organizationID/teams", GetAllTeamsController)
+	// e.GET("/api/:organizationID/get-campaigns", GetCampaignsController)
+	// e.GET("/api/:organizationID/:campaignId", StartCampaignController)
 	// e.POST("/:organizationID/update", UpdateOrganizationController)
 	// e.POST("/:organizationID/delete", RemoveOrganizationController)	
 
+	e.GET("/api/chatbot", ChatBot)
 
 	fmt.Println("RUNNING from RUN!")
 

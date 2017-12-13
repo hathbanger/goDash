@@ -1,23 +1,22 @@
 package models
 
 import (
-	"time"
 	"fmt"
+	"time"
 
-	"labix.org/v2/mgo/bson"
 	"github.com/hathbanger/goDash/store"
+	"labix.org/v2/mgo/bson"
 )
 
 type Campaign struct {
-	Id 				bson.ObjectId		`json:"id",bson:"_id"`
-	Timestamp 		time.Time	       	`json:"time",bson:"time"`
-	Organization 	*bson.ObjectId      `json:"organizationId",bson:"organizationId"`
-	Users			[]*bson.ObjectId 	`json:"users",bson:"users"`
-	Questions 		[]string 			`json:"questions",bson:"questions"`
-	Surveys 		[]*bson.ObjectId 	`json:"surveys",bson:"surveys"`
-	Started			bool				`json:"started",bson:"started"`
+	Id           bson.ObjectId    `json:"id",bson:"_id"`
+	Timestamp    time.Time        `json:"time",bson:"time"`
+	Organization *bson.ObjectId   `json:"organizationId",bson:"organizationId"`
+	Users        []*bson.ObjectId `json:"users",bson:"users"`
+	Questions    []string         `json:"questions",bson:"questions"`
+	Surveys      []*bson.ObjectId `json:"surveys",bson:"surveys"`
+	Started      bool             `json:"started",bson:"started"`
 }
-
 
 func NewCampaignModel(organizationId string, questions []string) *Campaign {
 	organization, err := FindOrganizationModel(organizationId)
@@ -51,19 +50,18 @@ func (s *Campaign) Save() error {
 	}
 
 	err = collection.Insert(&Campaign{
-		Id: s.Id,
-		Timestamp: s.Timestamp,
+		Id:           s.Id,
+		Timestamp:    s.Timestamp,
 		Organization: s.Organization,
-		Users: s.Users,
-		Questions: s.Questions,
-		Started: s.Started})
+		Users:        s.Users,
+		Questions:    s.Questions,
+		Started:      s.Started})
 	if err != nil {
 		return err
 	}
 
 	organization, err := FindOrganizationModel(s.Organization.Hex())
 	AddCampaignToOrganization(s.Id.Hex(), organization.Id.Hex())
-
 
 	return nil
 }
@@ -90,14 +88,13 @@ func FindCampaignModel(campaignId string) (Campaign, error) {
 	return Campaign, err
 }
 
-
 func StartCampaignModel(campaignId string) (Campaign, error) {
-	
+
 	var answers []string
 	var err error
 
 	campaign, err := FindCampaignModel(campaignId)
-	
+
 	if campaign.Started == false {
 		session, err := store.ConnectToDb()
 		defer session.Close()
@@ -111,10 +108,15 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 			panic(err)
 		}
 
-
 		for _, v := range campaign.Users {
 			survey := NewSurveyModel(campaign.Organization.Hex(), campaignId, v.Hex(), answers)
 			err = survey.Save()
+
+			user, _ := FindUserModel(v.Hex())
+
+			phone := "+1" + user.PhoneNumber
+
+			SendQuestionToPhone(phone, campaign.Questions[0])
 		}
 
 		if err != nil {
@@ -122,7 +124,7 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 		}
 
 		colQuerier := bson.M{"id": campaign.Id}
-		change := bson.M{"$set": bson.M{ "started": true }}
+		change := bson.M{"$set": bson.M{"started": true}}
 		err = collection.Update(colQuerier, change)
 		if err != nil {
 			panic(err)
@@ -130,9 +132,11 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 
 		campaign, err = FindCampaignModel(campaignId)
 
+		// models.SendSurvey()
+
 		return campaign, err
 	}
-	return campaign, err	
+	return campaign, err
 }
 
 // func DeleteOrganizationModel(organizationId string) error {
@@ -171,7 +175,7 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 // 	}
 
 // 	Campaign, err := FindCampaignModel(CampaignId)
-	
+
 // 	organization, err := FindOrganizationModel(organizationId)
 // 	query := bson.M{"id": organization.Id}
 // 	update := bson.M{"$push": bson.M{"Campaigns": &Campaign.Id}}
@@ -180,14 +184,12 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 // 	// Update
 // 	err = collection.Update(query, update)
 
-
 // 	if err != nil {
 // 		fmt.Println("err3", err)
 // 	}
 
 // 	return nil
 // }
-
 
 func AddCampaignToOrganization(campaignId string, organizationId string) error {
 	fmt.Println("AddCampaignToOrganization FIRED")
@@ -213,7 +215,6 @@ func AddCampaignToOrganization(campaignId string, organizationId string) error {
 	fmt.Println("organizationAFter", organizationAFter)
 	// Update
 	err = collection.Update(query, update)
-
 
 	if err != nil {
 		fmt.Println("err3", err)

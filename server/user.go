@@ -1,17 +1,17 @@
 package server
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/hathbanger/goDash/models"
 	"github.com/labstack/echo"
-	"github.com/dgrijalva/jwt-go"
 )
 
 func BulkUserController(c echo.Context) error {
-	
+
 	var u models.BulkUserCreate
 	if err := c.Bind(&u); err != nil {
 		fmt.Println("u", u.PhoneNumbers)
@@ -20,16 +20,14 @@ func BulkUserController(c echo.Context) error {
 	fmt.Println("u", u.PhoneNumbers)
 
 	for _, v := range u.PhoneNumbers {
-		user := models.NewUserModel( v, "", v, u.Organization )
+		user := models.NewUserModel(v, "", v, u.Organization)
 		_ = user.Save()
 	}
 
-
 	return c.JSON(http.StatusOK, map[string]string{
-			"token": "woooooo",
-		})
+		"token": "woooooo",
+	})
 }
-
 
 func CreateUserController(c echo.Context) error {
 	var u models.UserCreate
@@ -44,15 +42,13 @@ func CreateUserController(c echo.Context) error {
 		user = models.NewAdminUserModel(u.Username, u.Password, u.PhoneNumber, "")
 		err = user.Save()
 	} else {
-		user = models.NewUserModel("",  "",  u.PhoneNumber, u.Organization)
-		err = user.Save()		
+		user = models.NewUserModel("", "", u.PhoneNumber, u.Organization)
+		err = user.Save()
 	}
 
 	if err != nil {
 		fmt.Println("SHIT!")
 	}
-
-
 
 	// TODO: need to make an admin user creation controller
 
@@ -77,8 +73,8 @@ func CreateUserController(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, map[string]string{
-			"token": t,
-		})
+		"token": t,
+	})
 }
 
 func LoginUserController(c echo.Context) error {
@@ -139,11 +135,10 @@ func UpdateUserController(c echo.Context) error {
 	user, err := models.FindUserModel(userId)
 	if err != nil {
 		return err
-	}	
+	}
 
 	return c.JSON(http.StatusOK, user)
 }
-
 
 func RemoveUserController(c echo.Context) error {
 	username := c.FormValue("username")
@@ -155,4 +150,3 @@ func RemoveUserController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, "User deleted!")
 }
-
