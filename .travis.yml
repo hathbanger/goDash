@@ -3,7 +3,7 @@ go:
   - 1.9.1
 cache:
   directories:
-    -s "$HOME/google-cloud-sdk"
+    -s "$HOME/coding/google-cloud-sdk"
 env:
   global:
     - GOOGLE_APPLICATION_CREDENTIALS-~/gcloud-service-key.json
@@ -35,6 +35,6 @@ deploy:
     on:
       branch: develop
       
-      
+
 # notifications:
   # slack: effortlessrental:W1T5KZKXVJXg9WraZTGx0VDh
