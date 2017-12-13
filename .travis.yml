@@ -1,30 +1,39 @@
 language: go
-
 go:
   - 1.9.1
-
+cache:
+  directories:
+    -s "$HOME/google-cloud-sdk"
+env:
+  global:
+    - GOOGLE_APPLICATION_CREDENTIALS-~/gcloud-service-key.json
+    - PROJECT_NAME=serene-188901
+    - CLUSTER_NAME=dash-api
+    - CLOUDSDK_COMPUTE_ZONE=us-central1-a
 before_install:
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+  - source /home/travis/google-cloud-sdk/path.bash.inc
+  - gcloud --quiet version
+  - gcloud --quiet components update
+  - gcloud --quiet components update beta
   - go get
   # - dep ensure
-
-# TODO: implement code quality check
-# script:
-#   - go test -race -coverprofile=coverage.txt -covermode=atomic
-#
-# after_success:
-#   - bash <(curl -s https://codecov.io/bash) -t 208572b1-f8c5-42a4-b302-41698ad73609
-
+  
 install:
   - sudo docker build -t test/build .
-
 # TODO; implement test coverage check
 script:
-  - echo "skip tests"
-
-# TODO: implement deployment
-# deploy:
-#   - provider: script
-#     script: ./resources/deploy.sh
-#     skip_cleanup: true
-#     on:
-#       branch: master
+  - echo "Skip Tests"
+  # - go test ./... -tags dev -v
+  # - goreporter -p ./ -r ./reports -e -f text
+before_deploy:
+  - gcloud --quiet components update kubectl
+deploy:
+  - provider: script
+    script: ./resources/deploy.sh
+    skip_cleanup: true
+    on:
+      branch: develop
+      
+# notifications:
+  # slack: effortlessrental:W1T5KZKXVJXg9WraZTGx0VDh
