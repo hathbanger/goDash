@@ -1,26 +1,24 @@
 package models
 
 import (
-	"time"
 	"fmt"
+	"time"
 
-	"labix.org/v2/mgo/bson"
 	"github.com/hathbanger/goDash/store"
+	"labix.org/v2/mgo/bson"
 	// "github.com/butterfli-api/models"
 	//"github.com/labstack/gommon/log"
-
 )
 
 type User struct {
-	Id 				bson.ObjectId			`json:"id",bson:"_id,omitempty"`
-	Timestamp 		time.Time	       		`json:"time",bson:"time,omitempty"`
-	Username		string           		`json:"username",bson:"username,omitempty"`
-	Password		string           		`json:"-",bson:"password,omitempty"`
-	PhoneNumber		string           		`json:"phonenumber",bson:"phonenumber"`
-	Organization 	*bson.ObjectId 			`json:"organization",bson:"organization,omitempty"`
-	Surveys 		[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
+	Id           bson.ObjectId    `json:"id",bson:"_id,omitempty"`
+	Timestamp    time.Time        `json:"time",bson:"time,omitempty"`
+	Username     string           `json:"username",bson:"username,omitempty"`
+	Password     string           `json:"-",bson:"password,omitempty"`
+	PhoneNumber  string           `json:"phonenumber",bson:"phonenumber"`
+	Organization *bson.ObjectId   `json:"organization",bson:"organization,omitempty"`
+	Surveys      []*bson.ObjectId `json:"surveys",bson:"surveys"`
 }
-
 
 type UserLogin struct {
 	Username string `json:username`
@@ -28,19 +26,19 @@ type UserLogin struct {
 }
 
 type UserCreate struct {
-	Username string `json:username,omitempty`
-	Password string `json:password,omitempty`
-	PhoneNumber string `json:phonenumber,omitempty`
+	Username     string `json:username,omitempty`
+	Password     string `json:password,omitempty`
+	PhoneNumber  string `json:phonenumber,omitempty`
 	Organization string `json:organization,omitempty`
 }
 
 type BulkUserCreate struct {
-	Organization string `json:organization`
-	PhoneNumbers []string `json:"phoneNumbers"` 
+	Organization string   `json:organization`
+	PhoneNumbers []string `json:"phoneNumbers"`
 }
 
 func NewUserModel(username string, password string, phoneNumber string, organizationId string) *User {
-	
+
 	org := bson.ObjectIdHex(organizationId)
 
 	u := new(User)
@@ -54,7 +52,7 @@ func NewUserModel(username string, password string, phoneNumber string, organiza
 	return u
 }
 func NewAdminUserModel(username string, password string, phoneNumber string, organizationId string) *User {
-	
+
 	u := new(User)
 	u.Id = bson.NewObjectId()
 	u.Username = username
@@ -80,12 +78,12 @@ func (u *User) Save() error {
 	}
 
 	err = collection.Insert(&User{
-		Id: u.Id,
-		Timestamp: u.Timestamp,
-		Username: u.Username,
-		PhoneNumber: u.PhoneNumber,
+		Id:           u.Id,
+		Timestamp:    u.Timestamp,
+		Username:     u.Username,
+		PhoneNumber:  u.PhoneNumber,
 		Organization: u.Organization,
-		Password: u.Password})
+		Password:     u.Password})
 	fmt.Println("new user saved!", err)
 	if err != nil {
 		return err
@@ -172,7 +170,6 @@ func FindByUsernameModel(username string) (User, error) {
 	return user, err
 }
 
-
 func UpdateUserModel(userId string, username string, password string) (User, error) {
 
 	user, err := FindUserModel(userId)
@@ -184,7 +181,7 @@ func UpdateUserModel(userId string, username string, password string) (User, err
 
 	collection := session.DB("dash").C("users")
 	colQuerier := bson.M{"id": user.Id}
-	change := bson.M{"$set": bson.M{ "password": password }}
+	change := bson.M{"$set": bson.M{"password": password}}
 	err = collection.Update(colQuerier, change)
 	if err != nil {
 		panic(err)

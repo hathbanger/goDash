@@ -1,23 +1,22 @@
 package models
 
 import (
-	"time"
 	"fmt"
+	"time"
 
-	"labix.org/v2/mgo/bson"
 	"github.com/hathbanger/goDash/store"
+	"labix.org/v2/mgo/bson"
 )
 
 type Organization struct {
-	Id 			bson.ObjectId			`json:"id",bson:"_id"`
-	Timestamp 	time.Time	       		`json:"time",bson:"time"`
-	OrganizationName	string          `json:"organizationName",bson:"organizationName"`
-	Teams 		[]*bson.ObjectId 		`json:"teams",bson:"teams,omitempty"`
-	Users 		[]*bson.ObjectId 		`json:"users",bson:"users,omitempty"`
-	Campaigns	[]*bson.ObjectId 		`json:"campaigns",bson:"campaigns"`
-	Surveys 	[]*bson.ObjectId 		`json:"surveys",bson:"surveys"`
+	Id               bson.ObjectId    `json:"id",bson:"_id"`
+	Timestamp        time.Time        `json:"time",bson:"time"`
+	OrganizationName string           `json:"organizationName",bson:"organizationName"`
+	Teams            []*bson.ObjectId `json:"teams",bson:"teams,omitempty"`
+	Users            []*bson.ObjectId `json:"users",bson:"users,omitempty"`
+	Campaigns        []*bson.ObjectId `json:"campaigns",bson:"campaigns"`
+	Surveys          []*bson.ObjectId `json:"surveys",bson:"surveys"`
 }
-
 
 func NewOrganizationModel(organizationName string, userId string) *Organization {
 	objId := bson.ObjectIdHex(userId)
@@ -45,10 +44,10 @@ func (o *Organization) Save() error {
 	}
 
 	err = collection.Insert(&Organization{
-		Id: o.Id,
-		Timestamp: o.Timestamp,
+		Id:               o.Id,
+		Timestamp:        o.Timestamp,
 		OrganizationName: o.OrganizationName,
-		Users: o.Users})
+		Users:            o.Users})
 	if err != nil {
 		return err
 	}
@@ -56,9 +55,7 @@ func (o *Organization) Save() error {
 	userArr := o.Users[0]
 	user, err := FindUserModel(userArr.Hex())
 
-
 	AddOrganizationToUser(user.Id, o.Id)
-
 
 	return nil
 }
@@ -85,7 +82,6 @@ func FindOrganizationModel(organizationId string) (Organization, error) {
 	return organization, err
 }
 
-
 func UpdateOrganizationModel(organizationId string, organizationName string) (Organization, error) {
 
 	organization, err := FindOrganizationModel(organizationId)
@@ -97,7 +93,7 @@ func UpdateOrganizationModel(organizationId string, organizationName string) (Or
 
 	collection := session.DB("butterfli").C("organizations")
 	colQuerier := bson.M{"id": organization.Id}
-	change := bson.M{"$set": bson.M{ "organizationName": organizationName }}
+	change := bson.M{"$set": bson.M{"organizationName": organizationName}}
 	err = collection.Update(colQuerier, change)
 	if err != nil {
 		panic(err)
@@ -143,7 +139,7 @@ func AddOrganizationToUser(userId bson.ObjectId, organizationId bson.ObjectId) e
 	fmt.Println("FINDING ORG", organizationId)
 	organization, err := FindOrganizationModel(organizationId.Hex())
 	// err = collection.Update(
-	// 	    bson.M{"id": bson.ObjectIdHex(userId)}, 
+	// 	    bson.M{"id": bson.ObjectIdHex(userId)},
 	// 	    bson.M{"$push": bson.M{"Organization": organization.Id}},
 	// 	)
 
@@ -152,7 +148,6 @@ func AddOrganizationToUser(userId bson.ObjectId, organizationId bson.ObjectId) e
 
 	// Update
 	err = collection.Update(query, update)
-
 
 	if err != nil {
 		fmt.Println("err3", err)
@@ -177,7 +172,7 @@ func AddUserToOrganization(userId string, organizationId string) error {
 
 	user, err := FindUserModel(userId)
 	organization, err := FindOrganizationModel(organizationId)
-	
+
 	fmt.Println("FINDING ORG", organization)
 	query := bson.M{"id": organization.Id}
 	update := bson.M{"$push": bson.M{"users": &user.Id}}
@@ -186,7 +181,6 @@ func AddUserToOrganization(userId string, organizationId string) error {
 	fmt.Println("organizationAFter", organizationAFter)
 	// Update
 	err = collection.Update(query, update)
-
 
 	if err != nil {
 		fmt.Println("err3", err)

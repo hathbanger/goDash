@@ -101,15 +101,17 @@ func ReceiveSurveyResponse(c echo.Context) error {
 		fmt.Println("s", s)
 	}
 
-	phoneNumber := s.From[2:len(s.From)]
+	phoneNumber := "+1" + s.From[2:len(s.From)]
 
-	survey, err := models.AddResponseToSurveyModel(phoneNumber, s.Body)
+	fmt.Println("phoneNumber", phoneNumber)
+
+	survey, err := models.AddResponseToSurveyModel(s.From[2:len(s.From)], s.Body)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	survey, _ = models.FindSurveyModelByPhoneNumber(phoneNumber)
+	survey, _ = models.FindSurveyModelByPhoneNumber(s.From[2:len(s.From)])
 	if survey.Finished == false {
 		campaign, _ := models.FindCampaignModel(survey.Campaign.Hex())
 		models.SendQuestionToPhone(phoneNumber, campaign.Questions[len(survey.Answers)])

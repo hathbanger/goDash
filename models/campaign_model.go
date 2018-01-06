@@ -88,6 +88,43 @@ func FindCampaignModel(campaignId string) (Campaign, error) {
 	return Campaign, err
 }
 
+func stringInSlice(a string, list []*bson.ObjectId) bool {
+	for _, b := range list {
+		if b.Hex() == a {
+			return true
+		}
+	}
+	return false
+}
+
+func AddUsersToCampaignModel(campaignId string, users []string) (Campaign, error) {
+	session, err := store.ConnectToDb()
+	defer session.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	collection, err := store.ConnectToCollection(
+		session, "campaigns", []string{"time"})
+	if err != nil {
+		panic(err)
+	}
+
+	campaign, err := FindCampaignModel(campaignId)
+
+	for _, v := range users {
+		userBool := stringInSlice(v, campaign.Users)
+		if !userBool {
+			colQuerier := bson.M{"id": campaign.Id}
+			change := bson.M{"$set": bson.M{"users": users}}
+			err = collection.Update(colQuerier, change)
+		}
+	}
+
+	campaign, err = FindCampaignModel(campaignId)
+	return campaign, err
+}
+
 func StartCampaignModel(campaignId string) (Campaign, error) {
 
 	var answers []string
@@ -114,8 +151,8 @@ func StartCampaignModel(campaignId string) (Campaign, error) {
 
 			user, _ := FindUserModel(v.Hex())
 
-			phone := "+1" + user.PhoneNumber
-
+			phone := user.PhoneNumber
+			fmt.Println(user.PhoneNumber)
 			SendQuestionToPhone(phone, campaign.Questions[0])
 		}
 

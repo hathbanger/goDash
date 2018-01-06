@@ -1,21 +1,24 @@
 package server
 
 import (
-	"net/http"
-	// "fmt"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/hathbanger/goDash/models"
 	"github.com/labstack/echo"
-	"github.com/dgrijalva/jwt-go"
+	"net/http"
 )
 
 func CreateOrganizationController(c echo.Context) error {
-
+	var s models.Organization
+	if err := c.Bind(&s); err != nil {
+		fmt.Println("s", s)
+	}
 	userToken := c.Get("user").(*jwt.Token)
 	claims := userToken.Claims.(jwt.MapClaims)
 	userId := claims["id"].(string)
 
-	organizationName := c.FormValue("organizationName")
-	organization := models.NewOrganizationModel(organizationName, userId)
+	// organizationName := c.FormValue("organizationName")
+	organization := models.NewOrganizationModel(s.OrganizationName, userId)
 	err := organization.Save()
 	if err != nil {
 		return c.JSON(
@@ -42,11 +45,10 @@ func UpdateOrganizationController(c echo.Context) error {
 	organization, err := models.FindOrganizationModel(organizationID)
 	if err != nil {
 		return err
-	}	
+	}
 
 	return c.JSON(http.StatusOK, organization)
 }
-
 
 func RemoveOrganizationController(c echo.Context) error {
 	organizationID := c.Param("organizationID")
@@ -57,4 +59,3 @@ func RemoveOrganizationController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, "Organization deleted!")
 }
-
