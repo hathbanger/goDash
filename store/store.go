@@ -1,13 +1,13 @@
 package store
 
 import (
-	"labix.org/v2/mgo"
 	"fmt"
+	"labix.org/v2/mgo"
 )
 
 func ConnectToDb() (*mgo.Session, error) {
 
-	url := "localhost:27017"
+	url := "mongo:27017"
 	session, err := mgo.Dial(url)
 	if err != nil {
 		panic(err)
@@ -20,7 +20,6 @@ func ConnectToCollection(
 	session *mgo.Session,
 	collection_str string,
 	keyString []string) (*mgo.Collection, error) {
-	
 
 	collection := session.DB("dash").C(collection_str)
 	index := mgo.Index{
